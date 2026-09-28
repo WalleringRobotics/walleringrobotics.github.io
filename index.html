@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wallering Robotics · Vermessung &amp; Inspektion aus der Luft · Mühldorf a. Inn</title>
+<meta name="description" content="UAS-Datendienste aus dem Landkreis Mühldorf: Vermessung und Geländemodelle, Deformationsmonitoring, Bewuchskontrolle, Thermografie, Pflanzengesundheit und Kitzrettung. Zentimetergenau mit eigener RTK-Basis.">
+<link rel="canonical" href="https://walleringrobotics.de/">
+<meta name="theme-color" content="#F3EFE4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131915" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="de_DE">
+<meta property="og:site_name" content="Wallering Robotics">
+<meta property="og:title" content="Wallering Robotics · Ihr Land, zentimetergenau vermessen">
+<meta property="og:description" content="Vermessung, Inspektion und Pflanzengesundheit aus der Luft, geflogen im Landkreis Mühldorf.">
+<meta property="og:url" content="https://walleringrobotics.de/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="fonts/fraunces-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* Schriften lokal gehostet (keine Verbindung zu Google) */
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/fraunces-latin-opsz-normal.woff2) format('woff2')}
+@font-face{font-family:'Fraunces';font-style:italic;font-weight:100 900;font-display:swap;src:url(fonts/fraunces-latin-opsz-italic.woff2) format('woff2')}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/ibm-plex-sans-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/ibm-plex-sans-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/ibm-plex-sans-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/ibm-plex-mono-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2')}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+</style>
+<style>
+/* Layout: a survey map that keeps flying as you scroll — map hero, then field-sheet sections on a paper ground, one burnt-orange flight-line accent */
+:root{
+  --bg:#F3EFE4; --surface:#FBF8F1; --fg:#1E2A22; --muted:#4A554C; --line:rgba(30,42,34,.16);
+  --accent:#C4561F; --accent-soft:rgba(196,86,31,.16); --on-accent:#FFF8F2;
+  --gap:#EFE9DA; --f1:#8FAE72; --f2:#CDBB7E; --f3:#7EA067; --f4:#D8C893; --f5:#B3C48A; --f6:#6D8F5B; --fs:#A6BF86;
+  --river:#6E9CC4; --river2:#95BAD8; --road:#F8F4EA; --roof1:#9B6B52; --roof2:#7E5745; --tree:#5F8452;
+  --display:'Fraunces', Georgia, 'Times New Roman', serif;
+  --body:'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#131915; --surface:#1B231E; --fg:#ECE8DC; --muted:#A9B2A6; --line:rgba(236,232,220,.16);
+  --accent:#E27B45; --accent-soft:rgba(226,123,69,.2); --on-accent:#1A120D;
+  --gap:#20291F; --f1:#3F5634; --f2:#5E5534; --f3:#36502F; --f4:#655D3C; --f5:#4A5A36; --f6:#2E4428; --fs:#4C6340;
+  --river:#3D6789; --river2:#5383AA; --road:#2B3328; --roof1:#6E4B3A; --roof2:#5A3F32; --tree:#2F4A29;
+  color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#131915; --surface:#1B231E; --fg:#ECE8DC; --muted:#A9B2A6; --line:rgba(236,232,220,.16);
+  --accent:#E27B45; --accent-soft:rgba(226,123,69,.2); --on-accent:#1A120D;
+  --gap:#20291F; --f1:#3F5634; --f2:#5E5534; --f3:#36502F; --f4:#655D3C; --f5:#4A5A36; --f6:#2E4428; --fs:#4C6340;
+  --river:#3D6789; --river2:#5383AA; --road:#2B3328; --roof1:#6E4B3A; --roof2:#5A3F32; --tree:#2F4A29;
+  color-scheme:dark }
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.6;padding-inline:20px;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+.wrap{max-width:1200px;margin-inline:auto}
+h1,h2,h3{font-family:var(--display);font-weight:500;letter-spacing:-.02em;text-wrap:balance;margin:0}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.lede{font-size:20px;line-height:1.55;color:var(--muted);max-width:60ch}
+.mono{font-family:var(--mono)}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;margin-inline:-20px;padding-inline:20px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:24px;height:68px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--fg)}
+.brand .w{font-family:var(--display);font-weight:600;font-size:22px;line-height:1}
+.brand .r{font-family:var(--mono);font-size:10px;letter-spacing:.32em;color:var(--muted)}
+.mark{flex-shrink:0;overflow:visible}
+.mark .quad{animation:hover 3.2s ease-in-out infinite}
+@keyframes hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.4px)}}
+@media (prefers-reduced-motion: reduce){ .mark .quad{animation:none} }
+.foot-brand{display:flex;align-items:center;gap:12px;color:var(--fg)}
+.pilot-mark{color:var(--fg);width:88px;height:auto;margin-bottom:20px;display:block}
+.nav{display:flex;gap:4px;margin-left:auto}
+.nav a{font-size:15px;color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px}
+.nav a:hover,.nav a.on{color:var(--fg)}
+.nav a.on{background:var(--accent-soft)}
+.btn{display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 20px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-weight:600;font-size:15px;text-decoration:none;border:0;cursor:pointer;font-family:var(--body)}
+.btn:hover{filter:brightness(1.07)}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.progress{position:absolute;left:0;right:0;bottom:-1px;height:2px;background-image:linear-gradient(90deg,var(--line) 50%,transparent 50%);background-size:10px 2px}
+.progress i{display:block;height:2px;width:0;background:var(--accent)}
+@media (max-width:900px){ .nav{display:none} .top .btn{margin-left:auto} }
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:64px;align-items:center;padding-block:72px 96px}
+.hero-copy{display:flex;flex-direction:column;gap:28px}
+.hero h1{font-size:clamp(44px,6vw,78px);line-height:1.02}
+.hero h1 em{color:var(--accent)}
+.pills{display:flex;flex-wrap:wrap;gap:10px}
+.pill{display:inline-flex;align-items:center;gap:10px;padding:9px 15px;border:1px solid var(--line);border-radius:999px;font-size:15px;font-weight:500}
+.pill::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--accent)}
+.hero-cta{display:flex;flex-wrap:wrap;gap:12px}
+.coords{display:flex;flex-wrap:wrap;gap:8px 24px;font-family:var(--mono);font-size:13px;letter-spacing:.08em;color:var(--muted)}
+.map{border-radius:28px;overflow:hidden;background:var(--gap);box-shadow:0 30px 70px -40px rgba(20,30,24,.45);max-width:100%}
+.map svg{display:block;width:100%;height:auto}
+.t1{font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:.08em;fill:var(--fg)}
+.t2{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+.chip{fill:var(--surface);stroke:var(--line)}
+.lead{fill:none;stroke:var(--fg);stroke-opacity:.5;stroke-width:1.2;stroke-dasharray:3 3}
+.row{stroke:var(--fg);stroke-opacity:.12;stroke-width:1.5}
+.blade{transform-box:fill-box;transform-origin:center;animation:spin .35s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){ .blade{animation:none} }
+@media (max-width:900px){ .hero{grid-template-columns:minmax(0,1fr);gap:40px;padding-block:40px 64px} }
+
+/* sections */
+section.band{padding-block:104px;border-top:1px solid var(--line)}
+.head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px 64px;align-items:end;margin-bottom:56px}
+.head h2{font-size:clamp(34px,4.2vw,54px);line-height:1.06}
+@media (max-width:900px){ section.band{padding-block:72px} .head{grid-template-columns:minmax(0,1fr);margin-bottom:40px} }
+
+/* services */
+.svc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.svc article{background:var(--surface);padding:32px 28px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.svc svg{width:40px;height:40px;fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.svc h3{font-size:24px;line-height:1.15}
+.svc p{color:var(--muted);font-size:16px}
+.out{margin-top:auto;padding-top:14px;border-top:1px dashed var(--line);font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--fg)}
+.out b{font-weight:500;color:var(--muted);letter-spacing:.12em;margin-right:6px}
+.season{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--accent);text-transform:uppercase}
+@media (max-width:980px){ .svc{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:620px){ .svc{grid-template-columns:minmax(0,1fr)} }
+
+/* process */
+.proc{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:64px}
+.console{position:sticky;top:110px;align-self:start;background:#18201B;color:#DCE3D6;border-radius:20px;padding:28px;font-family:var(--mono);font-size:14px;line-height:1.7;min-width:0}
+.console .bar{display:flex;justify-content:space-between;gap:12px;color:#8E9A8B;font-size:12px;letter-spacing:.12em;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid rgba(220,227,214,.14)}
+.console .stage{font-family:var(--display);font-size:32px;color:#F3EFE4;letter-spacing:-.01em;margin-bottom:14px}
+.console dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 20px;margin:0}
+.console dt{color:#8E9A8B}
+.console dd{margin:0;color:#F3EFE4;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.console .ok{margin-top:18px;color:#E9A57C}
+.steps{display:flex;flex-direction:column;gap:0;list-style:none;margin:0;padding:0}
+.steps li{padding-block:44px;border-top:1px solid var(--line);display:grid;grid-template-columns:72px minmax(0,1fr);gap:20px;opacity:.45;transition:opacity .3s}
+.steps li:first-child{border-top:0;padding-top:8px}
+.steps li.on{opacity:1}
+.steps .n{font-family:var(--mono);font-size:14px;color:var(--accent);padding-top:10px;letter-spacing:.1em}
+.steps h3{font-size:30px;margin-bottom:10px}
+.steps p{color:var(--muted);max-width:52ch}
+@media (max-width:900px){ .proc{grid-template-columns:minmax(0,1fr);gap:32px} .console{position:static} .steps li{opacity:1;grid-template-columns:48px minmax(0,1fr)} }
+
+/* accuracy */
+.acc{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.prod{border:1px solid var(--line);border-radius:20px;padding:32px;display:flex;flex-direction:column;gap:14px;background:var(--surface);min-width:0}
+.prod.main{border-color:var(--accent)}
+.prod .big{font-family:var(--display);font-size:clamp(48px,6vw,72px);line-height:1;letter-spacing:-.03em}
+.prod.main .big{color:var(--accent)}
+.prod p{color:var(--muted)}
+.tag{align-self:flex-start;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:5px 10px;border-radius:6px;border:1px solid var(--line);color:var(--muted)}
+.prod.main .tag{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.ruler{grid-column:1/-1;border:1px solid var(--line);border-radius:20px;padding:28px 32px 20px;background:var(--surface)}
+.ruler .ttl{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:26px}
+.track{position:relative;height:56px;margin-inline:8px}
+.track .axis{position:absolute;left:0;right:0;top:40px;height:1px;background:var(--fg);opacity:.5}
+.track .band{position:absolute;top:10px;height:22px;border-radius:5px}
+.track .band span{position:absolute;top:-2px;left:calc(100% + 10px);white-space:nowrap;font-family:var(--mono);font-size:12px;color:var(--fg)}
+.track .b1{background:var(--accent)}
+.track .b2{background:var(--fg);opacity:.35}
+.track .b2 span{left:auto;right:calc(100% + 10px)}
+.ticks{position:relative;height:28px;margin-inline:8px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.ticks span{position:absolute;transform:translateX(-50%);top:4px}
+.ticks span::before{content:"";position:absolute;left:50%;top:-12px;width:1px;height:8px;background:var(--fg);opacity:.5}
+.check{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:32px;align-items:center;padding:32px;border-radius:20px;border:1px dashed var(--line)}
+.check h3{font-size:28px;margin-bottom:10px}
+.check p{color:var(--muted)}
+.ctr{font-family:var(--mono);font-size:13px;display:grid;gap:8px;min-width:0;overflow-x:auto}
+.ctr div{display:grid;grid-template-columns:150px repeat(5,minmax(40px,1fr));gap:6px;align-items:center;font-variant-numeric:tabular-nums}
+.ctr div span{text-align:center;padding:5px 0;border-radius:5px;background:var(--accent-soft)}
+.ctr div span:first-child{text-align:left;background:none;color:var(--muted)}
+.ctr .res{display:flex;gap:10px;align-items:center;color:var(--accent);font-weight:500;padding-top:6px}
+@media (max-width:800px){ .acc,.check{grid-template-columns:minmax(0,1fr)} .ctr div{grid-template-columns:110px repeat(5,minmax(34px,1fr))} }
+
+/* region */
+.region{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:48px;align-items:center}
+.rmap{border-radius:24px;overflow:hidden;background:var(--surface);border:1px solid var(--line);max-width:100%}
+.rmap svg{display:block;width:100%;height:auto}
+.town{font-family:var(--body);font-size:13px;fill:var(--fg)}
+.town.hq{font-weight:600;font-size:15px}
+.km{font-family:var(--mono);font-size:10px;fill:var(--muted);letter-spacing:.08em}
+.facts{display:grid;gap:20px}
+.fact{display:grid;grid-template-columns:120px minmax(0,1fr);gap:16px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+.fact:last-child{border-bottom:0}
+.fact dt{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-top:3px}
+.fact dd{margin:0}
+@media (max-width:900px){ .region{grid-template-columns:minmax(0,1fr)} }
+
+/* pilot */
+.pilot{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;background:var(--surface);border:1px solid var(--line);border-radius:28px;padding:56px}
+.pilot h2{font-size:clamp(34px,4.2vw,52px);line-height:1.06;margin-bottom:20px}
+.pilot ul{list-style:none;padding:0;margin:28px 0 0;display:grid;gap:14px}
+.pilot li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px}
+.pilot li svg{width:20px;height:20px;margin-top:3px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+form{display:grid;gap:16px;align-content:start}
+label{display:grid;gap:6px;font-size:14px;font-weight:500}
+input,select,textarea{font:inherit;font-size:16px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-height:46px;width:100%}
+textarea{min-height:110px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.note{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.status{font-size:15px;padding:12px 14px;border-radius:10px;background:var(--accent-soft)}
+@media (max-width:900px){ .pilot{grid-template-columns:minmax(0,1fr);padding:32px 22px;gap:36px} }
+@media (max-width:480px){ .two{grid-template-columns:minmax(0,1fr)} }
+
+footer{padding-block:48px 64px;display:flex;flex-wrap:wrap;gap:16px 32px;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+footer nav{display:flex;gap:20px}
+footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#start" aria-label="Wallering Robotics, zum Seitenanfang">
+      <svg class="mark" width="60" height="40" viewBox="0 0 72 48" aria-hidden="true">
+        <g transform="translate(2 5)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 10 L13 38 L22 14 L31 38 L40 10 H46 C54 10 54 25 46 25 H35.5" stroke="currentColor" stroke-width="4.5"/>
+          <path d="M44 25 L54.5 38.5" stroke="currentColor" stroke-width="4.5"/>
+          <path d="M46.2 10 L48.4 3.2" stroke="currentColor" stroke-width="3"/>
+          <circle cx="49.1" cy="0.3" r="2.9" fill="var(--accent)" stroke="none"/>
+          <path class="link" d="M52.8 0.9 L56.4 1.8" stroke="var(--accent)" stroke-width="1.8" stroke-dasharray="0 3"/>
+          <g class="quad"><g transform="translate(62 2.6)">
+            <path d="M-3 -3 L3 3 M-3 3 L3 -3" stroke="currentColor" stroke-width="2.2"/>
+            <g fill="currentColor" stroke="none"><circle cx="-3" cy="-3" r="2"/><circle cx="3" cy="-3" r="2"/><circle cx="-3" cy="3" r="2"/><circle cx="3" cy="3" r="2"/></g>
+            <circle r="1.5" fill="var(--accent)" stroke="none"/>
+          </g></g>
+        </g>
+      </svg>
+      <span style="display:grid;gap:3px"><span class="w">Wallering</span><span class="r">ROBOTICS</span></span>
+    </a>
+    <nav class="nav" aria-label="Hauptnavigation">
+      <a href="#leistungen">Leistungen</a>
+      <a href="#ablauf">Ablauf</a>
+      <a href="#genauigkeit">Genauigkeit</a>
+      <a href="#region">Region</a>
+    </nav>
+    <a class="btn" href="#pilot">Pilotbetrieb werden</a>
+  </div>
+  <div class="progress" aria-hidden="true"><i id="prog"></i></div>
+</header>
+
+<main class="wrap" id="start">
+
+<section class="hero" aria-labelledby="h-hero">
+  <div class="hero-copy">
+    <div class="eyebrow">UAS-Datendienste · Südostbayern</div>
+    <h1 id="h-hero">Ihr Land, <em>zentimetergenau</em> vermessen.</h1>
+    <p class="lede">Vermessung, Inspektion und Pflanzengesundheit aus der Luft. Geflogen im Landkreis Mühldorf, ausgewertet mit offener, nachvollziehbarer Technik.</p>
+    <div class="pills">
+      <span class="pill">Vermessung &amp; Geländemodelle</span>
+      <span class="pill">Thermische Inspektion</span>
+      <span class="pill">Pflanzengesundheit</span>
+      <span class="pill">Bewuchskontrolle</span>
+    </div>
+    <div class="hero-cta">
+      <a class="btn" href="#pilot">Fläche anfragen</a>
+      <a class="btn ghost" href="#leistungen">Leistungen ansehen</a>
+    </div>
+    <div class="coords"><span>48.24° N · 12.52° E</span><span>RTK / PPK</span><span>Open-Source-first</span></div>
+  </div>
+
+  <div class="map">
+    <svg viewBox="0 0 760 740" role="img" aria-label="Kartenillustration: Drohne fliegt ein Vermessungsmuster über Feldern am Inn, mit RTK-Basis und Passpunkten">
+      <defs>
+        <pattern id="px" width="30" height="30" patternUnits="userSpaceOnUse">
+          <path d="M30 0H0V30" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1"/>
+        </pattern>
+        <mask id="swathMask" maskUnits="userSpaceOnUse" x="-200" y="-200" width="1200" height="1200">
+          <path id="swathM" d="" fill="none" stroke="#fff" stroke-width="40"/>
+        </mask>
+      </defs>
+      <g transform="rotate(-14 400 370)">
+        <rect x="-120" y="-80" width="260" height="220" rx="4" fill="var(--f1)"/>
+        <rect x="150" y="-80" width="300" height="220" rx="4" fill="var(--f2)"/>
+        <rect x="460" y="-80" width="220" height="220" rx="4" fill="var(--f3)"/>
+        <rect x="690" y="-80" width="260" height="220" rx="4" fill="var(--f4)"/>
+        <rect x="-120" y="150" width="200" height="280" rx="4" fill="var(--f5)"/>
+        <rect x="90" y="150" width="420" height="280" rx="4" fill="var(--fs)"/>
+        <rect x="520" y="150" width="180" height="280" rx="4" fill="var(--f4)"/>
+        <rect x="710" y="150" width="240" height="280" rx="4" fill="var(--f3)"/>
+        <rect x="-120" y="440" width="340" height="200" rx="4" fill="var(--f2)"/>
+        <rect x="230" y="440" width="240" height="200" rx="4" fill="var(--f6)"/>
+        <rect x="480" y="440" width="300" height="200" rx="4" fill="var(--f5)"/>
+        <rect x="790" y="440" width="160" height="200" rx="4" fill="var(--f1)"/>
+        <rect x="-120" y="650" width="280" height="230" rx="4" fill="var(--f3)"/>
+        <rect x="170" y="650" width="330" height="230" rx="4" fill="var(--f4)"/>
+        <rect x="510" y="650" width="440" height="230" rx="4" fill="var(--f2)"/>
+        <g class="row" id="rows"></g>
+
+        <g mask="url(#swathMask)">
+          <rect x="60" y="130" width="480" height="320" fill="var(--accent)" fill-opacity=".2"/>
+          <rect x="60" y="130" width="480" height="320" fill="url(#px)"/>
+        </g>
+        <rect x="90" y="150" width="420" height="280" rx="4" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="10 6"/>
+        <path id="plan" fill="none" stroke="var(--accent)" stroke-opacity=".75" stroke-width="2.5" stroke-dasharray="6 7" stroke-linecap="round" d="M110 172 H490 A20 20 0 0 1 490 212 H110 A20 20 0 0 0 110 252 H490 A20 20 0 0 1 490 292 H110 A20 20 0 0 0 110 332 H490 A20 20 0 0 1 490 372 H110 A20 20 0 0 0 110 412 H490"/>
+        <path id="done" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d=""/>
+
+        <g><rect x="112" y="397" width="18" height="18" fill="#FBF8F1"/><rect x="112" y="397" width="9" height="9" fill="#1E2A22"/><rect x="121" y="406" width="9" height="9" fill="#1E2A22"/></g>
+        <g><rect x="470" y="160" width="18" height="18" fill="#FBF8F1"/><rect x="470" y="160" width="9" height="9" fill="#1E2A22"/><rect x="479" y="169" width="9" height="9" fill="#1E2A22"/></g>
+
+        <g id="drone" transform="translate(300 292)">
+          <rect x="-30" y="-20" width="60" height="40" rx="2" fill="var(--accent)" fill-opacity=".22" stroke="var(--accent)" stroke-width="1.5"/>
+          <g stroke="#1E2A22" stroke-width="4" stroke-linecap="round">
+            <line x1="0" y1="0" x2="34" y2="0"/><line x1="0" y1="0" x2="17" y2="29.4"/><line x1="0" y1="0" x2="-17" y2="29.4"/>
+            <line x1="0" y1="0" x2="-34" y2="0"/><line x1="0" y1="0" x2="-17" y2="-29.4"/><line x1="0" y1="0" x2="17" y2="-29.4"/>
+          </g>
+          <g id="rotors"></g>
+          <circle r="13" fill="#1E2A22"/><circle r="4.5" fill="var(--accent)"/>
+        </g>
+      </g>
+
+      <path d="M560 -20 C 590 200 520 420 640 760" fill="none" stroke="var(--road)" stroke-width="6" stroke-linecap="round"/>
+      <path d="M-20 600 C 150 540 220 690 400 640 S 620 520 790 560" fill="none" stroke="var(--river)" stroke-width="28" stroke-linecap="round"/>
+      <path d="M-20 600 C 150 540 220 690 400 640 S 620 520 790 560" fill="none" stroke="var(--river2)" stroke-width="12" stroke-linecap="round"/>
+      <g fill="none" stroke="var(--fg)" stroke-opacity=".16" stroke-width="1.2">
+        <path d="M470 20 C 560 60 640 40 760 90"/><path d="M500 -10 C 590 30 660 10 760 50"/><path d="M440 60 C 540 110 650 90 760 140"/>
+      </g>
+      <rect x="646" y="636" width="36" height="22" rx="2" fill="var(--roof1)"/>
+      <rect x="688" y="648" width="22" height="32" rx="2" fill="var(--roof2)"/>
+      <circle cx="632" cy="664" r="9" fill="var(--tree)"/><circle cx="720" cy="630" r="10" fill="var(--tree)"/><circle cx="668" cy="676" r="7" fill="var(--tree)"/>
+
+      <g fill="none" stroke="var(--accent)" stroke-width="1.5">
+        <circle cx="660" cy="300" r="20" stroke-opacity=".9"/><circle cx="660" cy="300" r="36" stroke-opacity=".55"/><circle cx="660" cy="300" r="52" stroke-opacity=".28"/>
+      </g>
+      <g stroke="var(--fg)" stroke-width="1.5"><line x1="660" y1="300" x2="649" y2="312"/><line x1="660" y1="300" x2="671" y2="312"/><line x1="660" y1="300" x2="660" y2="286"/></g>
+      <circle cx="660" cy="300" r="6" fill="var(--fg)"/>
+
+      <path class="lead" d="M140 80 L 262 236"/>
+      <rect class="chip" x="24" y="24" width="210" height="56" rx="10"/>
+      <text class="t1" x="40" y="48">LIVE-MOSAIK</text>
+      <text class="t2" x="40" y="66" id="covTxt">Abdeckung im Flug · 2–5 m</text>
+
+      <path class="lead" d="M400 440 L 290 334"/>
+      <rect class="chip" x="360" y="440" width="222" height="56" rx="10"/>
+      <text class="t1" x="376" y="464">SURVEY-FLUG</text>
+      <text class="t2" x="376" y="482">100 m AGL · 80 % Überlappung</text>
+
+      <path class="lead" d="M625 242 L 650 282"/>
+      <rect class="chip" x="520" y="186" width="190" height="56" rx="10"/>
+      <text class="t1" x="536" y="210">RTK-BASIS</text>
+      <text class="t2" x="536" y="228">PPK · 1–3 cm</text>
+
+      <path class="lead" d="M110 500 L 134 478"/>
+      <rect class="chip" x="24" y="500" width="160" height="56" rx="10"/>
+      <text class="t1" x="40" y="524">PASSPUNKT</text>
+      <text class="t2" x="40" y="542">GCP · Kontrolle</text>
+
+      <polygon points="720,32 730,62 720,55 710,62" fill="var(--fg)"/>
+      <text class="t1" x="715" y="82">N</text>
+      <rect class="chip" x="24" y="690" width="170" height="28" rx="8"/>
+      <text class="t2" x="38" y="708">ETRS89 · UTM 32N</text>
+      <g stroke="var(--fg)" stroke-width="1.5"><line x1="600" y1="706" x2="700" y2="706"/><line x1="600" y1="700" x2="600" y2="712"/><line x1="650" y1="702" x2="650" y2="710"/><line x1="700" y1="700" x2="700" y2="712"/></g>
+      <text class="t2" x="596" y="692">0</text><text class="t2" x="684" y="692">100 m</text>
+    </svg>
+  </div>
+</section>
+
+<section class="band" id="leistungen" aria-labelledby="h-l">
+  <div class="head">
+    <div style="display:grid;gap:16px"><div class="eyebrow">Leistungen</div><h2 id="h-l">Daten, die man anfassen kann.</h2></div>
+    <p class="lede">Wir liefern keine Drohnen, sondern Ergebnisse: Karten, Modelle und Befunde in den Formaten, mit denen Ihr Büro, Ihr Betrieb oder Ihre Behörde schon arbeitet.</p>
+  </div>
+  <div class="svc">
+    <article>
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M4 30c6-4 10-4 16 0s10 4 16 0"/><path d="M4 22c6-4 10-4 16 0s10 4 16 0"/><path d="M4 14c6-4 10-4 16 0s10 4 16 0"/></svg>
+      <h3>Vermessung &amp; Geländemodelle</h3>
+      <p>Orthofotos und Höhenmodelle für Planung, Erdbau und Flurstücke. Ausgewertet gegen die eigene Referenzstation.</p>
+      <div class="out"><b>ERGEBNIS</b>Orthofoto · DGM/DOM · Punktwolke</div>
+    </article>
+    <article>
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M3 32h34"/><path d="M6 32l10-18h8l10 18"/><path d="M14 22h12" stroke-dasharray="2 3"/><path d="M20 6v4M17 8h6"/></svg>
+      <h3>Deformationsmonitoring</h3>
+      <p>Wiederholte Befliegung von Dämmen, Böschungen und Halden. Der Vergleich zweier Epochen zeigt, wo sich Gelände bewegt.</p>
+      <div class="out"><b>ERGEBNIS</b>Differenzmodell · Profilschnitte</div>
+    </article>
+    <article>
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 4l-8 32M20 4l8 32M13 14h14M11 22h18M9 30h22"/><path d="M4 36c2-4 4-6 6-6M36 36c-2-5-4-7-7-7"/></svg>
+      <h3>Bewuchskontrolle</h3>
+      <p>Abstand von Bäumen und Aufwuchs zu Leitungen und Trassen, dokumentiert für den nächsten Pflegegang.</p>
+      <div class="out"><b>ERGEBNIS</b>Befundkarte · Abstandsliste</div>
+    </article>
+    <article>
+      <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="5" y="9" width="30" height="22" rx="2"/><path d="M5 20h30M15 9v22M25 9v22"/><circle cx="29" cy="14" r="3" fill="currentColor" stroke="none" style="color:var(--accent)"/></svg>
+      <h3>Thermische Inspektion</h3>
+      <p>Wärmebilder von PV-Anlagen, Dächern und Stallgebäuden. Defekte Module und Wärmebrücken, verortet auf dem Grundriss.</p>
+      <div class="out"><b>ERGEBNIS</b>Thermokarte · Fehlerliste mit Position</div>
+    </article>
+    <article>
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 32C8 16 18 8 34 6c-2 16-10 26-26 26z"/><path d="M8 32L24 16"/></svg>
+      <h3>Pflanzengesundheit</h3>
+      <p>Multispektrale Karten zeigen Stress, Nährstoffmangel und Lücken im Bestand, bevor man sie vom Feldrand sieht.</p>
+      <div class="out"><b>ERGEBNIS</b>Vitalitätskarte · Zonen für Ausbringung</div>
+    </article>
+    <article>
+      <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="22" r="4"/><circle cx="20" cy="22" r="10" stroke-dasharray="3 3"/><path d="M4 36l4-8M12 36l2-6M28 36l-2-6M36 36l-4-8"/></svg>
+      <div class="season">Saisonal · Mai bis Juni</div>
+      <h3>Kitzrettung</h3>
+      <p>Wärmebildsuche vor der ersten Mahd, früh am Morgen und abgestimmt mit Ihrem Mähtermin.</p>
+      <div class="out"><b>ERGEBNIS</b>Freigabe der Fläche · Protokoll</div>
+    </article>
+  </div>
+</section>
+
+<section class="band" id="ablauf" aria-labelledby="h-a">
+  <div class="head">
+    <div style="display:grid;gap:16px"><div class="eyebrow">Ablauf</div><h2 id="h-a">Vom Feldrand bis zur fertigen Karte.</h2></div>
+    <p class="lede">Vier Schritte, bei jedem Einsatz gleich. Rechts das Protokoll eines typischen Vermessungsflugs über 50 Hektar.</p>
+  </div>
+  <div class="proc">
+    <div class="console" aria-live="polite">
+      <div class="bar"><span>EINSATZPROTOKOLL</span><span id="cStep">SCHRITT 1 / 4</span></div>
+      <div class="stage" id="cStage">Planung</div>
+      <dl id="cList">
+        <dt>Fläche</dt><dd>50 ha, Grenzen aus Flurkarte</dd>
+        <dt>Flughöhe</dt><dd>100 m über Grund</dd>
+        <dt>Bodenauflösung</dt><dd>1,1 cm pro Pixel</dd>
+        <dt>Überlappung</dt><dd>80 % in Flugrichtung</dd>
+        <dt>Genehmigung</dt><dd>Offene Kategorie, Anlieger informiert</dd>
+      </dl>
+      <div class="ok" id="cOk">› Flugplan freigegeben</div>
+    </div>
+    <ol class="steps" id="steps">
+      <li class="on" data-i="0"><span class="n">01</span><div><h3>Planung</h3><p>Wir klären die Frage hinter dem Auftrag und legen Fläche, Auflösung und Termin fest. Rechtliche Vorgaben und Anlieger werden vor dem Flug geprüft.</p></div></li>
+      <li data-i="1"><span class="n">02</span><div><h3>Flug</h3><p>Die Drohne fliegt das Raster automatisch ab. Am Boden sehen wir live, welche Bereiche erfasst sind, und fliegen Lücken sofort nach.</p></div></li>
+      <li data-i="2"><span class="n">03</span><div><h3>Auswertung</h3><p>Jedes Bild bekommt seine exakte Position aus der Nachberechnung gegen unsere eigene Basisstation. Daraus entstehen Orthofoto, Höhenmodell und Befunde.</p></div></li>
+      <li data-i="3"><span class="n">04</span><div><h3>Übergabe</h3><p>Sie erhalten die Daten in Ihren Formaten und im amtlichen Bezugssystem, mit einem kurzen Bericht, der erklärt, was die Karte zeigt und wie genau sie ist.</p></div></li>
+    </ol>
+  </div>
+</section>
+
+<section class="band" id="genauigkeit" aria-labelledby="h-g">
+  <div class="head">
+    <div style="display:grid;gap:16px"><div class="eyebrow">Genauigkeit</div><h2 id="h-g">Zwei Karten, zwei Zwecke.</h2></div>
+    <p class="lede">Die Vorschau im Flug und das Vermessungsprodukt sind verschiedene Dinge. Wir sagen immer dazu, welches Sie gerade vor sich haben.</p>
+  </div>
+  <div class="acc">
+    <div class="prod">
+      <span class="tag">Im Flug</span>
+      <div class="big">2–5 m</div>
+      <h3 style="font-size:24px">Live-Mosaik</h3>
+      <p>Entsteht an Bord, während geflogen wird. Zeigt Abdeckung und Bildqualität, damit keine Lücke erst im Büro auffällt. Kein Vermessungsergebnis.</p>
+    </div>
+    <div class="prod main">
+      <span class="tag">Nach dem Flug</span>
+      <div class="big">1–3 cm</div>
+      <h3 style="font-size:24px">Vermessungsprodukt</h3>
+      <p>Orthofoto und Höhenmodell nach Nachberechnung (PPK) gegen die eigene Referenzstation, geprüft an Passpunkten. Das ist die Lieferung.</p>
+    </div>
+    <div class="ruler">
+      <div class="ttl"><span class="eyebrow">Lagegenauigkeit, logarithmisch</span><span class="note">1 cm bis 10 m</span></div>
+      <div class="track" aria-hidden="true">
+        <div class="axis"></div>
+        <div class="band b1" style="left:0%;width:15.9%"><span>Vermessungsprodukt</span></div>
+        <div class="band b2" style="left:76.7%;width:13.3%"><span>Live-Mosaik</span></div>
+      </div>
+      <div class="ticks" aria-hidden="true"><span style="left:0%">1 cm</span><span style="left:33.33%">10 cm</span><span style="left:66.67%">1 m</span><span style="left:100%">10 m</span></div>
+    </div>
+    <div class="check">
+      <div>
+        <h3>Jedes Bild wird dreifach gezählt.</h3>
+        <p>GNSS-Empfänger, Flugsteuerung und Kamera zählen jede Auslösung unabhängig. Stimmen die drei Zählungen nicht überein, wird der Datensatz verworfen und neu geflogen. So lässt sich jede Bildposition belegen.</p>
+      </div>
+      <div class="ctr" role="table" aria-label="Beispiel: drei unabhängige Zähler je Auslösung">
+        <div role="row"><span role="rowheader">GNSS-Zeitmarke</span><span>1</span><span>2</span><span>3</span><span>…</span><span>2 250</span></div>
+        <div role="row"><span role="rowheader">Flugsteuerung</span><span>1</span><span>2</span><span>3</span><span>…</span><span>2 250</span></div>
+        <div role="row"><span role="rowheader">Kamera-Bild-ID</span><span>1</span><span>2</span><span>3</span><span>…</span><span>2 250</span></div>
+        <p class="res"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg>Übereinstimmung, Datensatz freigegeben</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="region" aria-labelledby="h-r">
+  <div class="head">
+    <div style="display:grid;gap:16px"><div class="eyebrow">Region</div><h2 id="h-r">Kurze Wege am Inn.</h2></div>
+    <p class="lede">Wir fliegen dort, wo wir wohnen: Landkreis Mühldorf, Altötting und die angrenzenden Gemeinden. Wer schnell vor Ort ist, kann auch das kurze Wetterfenster nutzen.</p>
+  </div>
+  <div class="region">
+    <div class="rmap">
+      <svg viewBox="0 0 600 440" role="img" aria-label="Schematische Karte des Einsatzgebiets um Mühldorf am Inn mit Ringen bei 10 und 20 Kilometern">
+        <rect width="600" height="440" fill="var(--surface)"/>
+        <g fill="none" stroke="var(--line)" stroke-width="1"><path d="M0 110H600M0 220H600M0 330H600M150 0V440M300 0V440M450 0V440"/></g>
+        <path d="M-10 312 C 90 300 170 296 223 282 S 270 236 300 229 S 350 224 384 228 S 470 246 610 252" fill="none" stroke="var(--river)" stroke-width="10" stroke-linecap="round"/>
+        <text class="km" x="470" y="272">INN</text>
+        <circle cx="300" cy="220" r="140" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="6 6"/>
+        <circle cx="300" cy="220" r="70" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="6 6"/>
+        <text class="km" x="306" y="146">10 KM</text><text class="km" x="306" y="76">20 KM</text>
+        <g fill="var(--fg)">
+          <circle cx="251" cy="255" r="4"/><circle cx="244" cy="213" r="4"/><circle cx="356" cy="220" r="4"/><circle cx="384" cy="220" r="4"/><circle cx="398" cy="238" r="4"/><circle cx="286" cy="115" r="4"/><circle cx="223" cy="276" r="4"/>
+        </g>
+        <text class="town" x="196" y="252">Waldkraiburg</text>
+        <text class="town" x="182" y="209">Ampfing</text>
+        <text class="town" x="332" y="206">Töging</text>
+        <text class="town" x="378" y="208" dx="14">Neuötting</text>
+        <text class="town" x="406" y="252">Altötting</text>
+        <text class="town" x="296" y="112">Neumarkt-St. Veit</text>
+        <text class="town" x="168" y="296">Kraiburg</text>
+        <circle cx="300" cy="220" r="11" fill="var(--accent)"/><circle cx="300" cy="220" r="4" fill="var(--surface)"/>
+        <text class="town hq" x="262" y="190">Mühldorf a. Inn</text>
+        <g><path d="M540 380 h36" stroke="var(--fg)" stroke-width="1.5"/><path d="M570 374l6 6-6 6" fill="none" stroke="var(--fg)" stroke-width="1.5"/><text class="km" x="470" y="384">BURGHAUSEN</text></g>
+        <text class="km" x="20" y="420">SCHEMATISCH · NICHT MASSSTÄBLICH</text>
+      </svg>
+    </div>
+    <dl class="facts">
+      <div class="fact"><dt>Gebiet</dt><dd>Landkreise Mühldorf und Altötting, auf Anfrage darüber hinaus</dd></div>
+      <div class="fact"><dt>Referenz</dt><dd>Eigene RTK-Basisstation im Landkreis, Nachberechnung ohne Abhängigkeit vom Mobilfunk</dd></div>
+      <div class="fact"><dt>Bezug</dt><dd>ETRS89 / UTM Zone 32N, Höhen im DHHN2016</dd></div>
+      <div class="fact"><dt>Technik</dt><dd>Offener Software-Stack, Hardware ohne Abhängigkeit von einzelnen Herstellern</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section class="band" id="pilot" aria-labelledby="h-p">
+  <div class="pilot">
+    <div>
+      <svg class="pilot-mark mark" width="88" height="59" viewBox="0 0 72 48" aria-hidden="true">
+        <g transform="translate(2 5)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 10 L13 38 L22 14 L31 38 L40 10 H46 C54 10 54 25 46 25 H35.5" stroke="currentColor" stroke-width="4.5"/>
+          <path d="M44 25 L54.5 38.5" stroke="currentColor" stroke-width="4.5"/>
+          <path d="M46.2 10 L48.4 3.2" stroke="currentColor" stroke-width="3"/>
+          <circle cx="49.1" cy="0.3" r="2.9" fill="var(--accent)" stroke="none"/>
+          <path d="M52.8 0.9 L56.4 1.8" stroke="var(--accent)" stroke-width="1.8" stroke-dasharray="0 3"/>
+          <g class="quad"><g transform="translate(62 2.6)">
+            <path d="M-3 -3 L3 3 M-3 3 L3 -3" stroke="currentColor" stroke-width="2.2"/>
+            <g fill="currentColor" stroke="none"><circle cx="-3" cy="-3" r="2"/><circle cx="3" cy="-3" r="2"/><circle cx="-3" cy="3" r="2"/><circle cx="3" cy="3" r="2"/></g>
+            <circle r="1.5" fill="var(--accent)" stroke="none"/>
+          </g></g>
+        </g>
+      </svg>
+      <div class="eyebrow" style="margin-bottom:16px">Pilotprogramm 2027</div>
+      <h2 id="h-p">Wir suchen Pilotbetriebe.</h2>
+      <p class="lede">In den nächsten zwölf Monaten arbeiten wir mit einer kleinen Zahl von Betrieben, Büros und Kommunen aus der Region zusammen. Sie bringen eine echte Fragestellung mit, wir die Technik.</p>
+      <ul>
+        <li><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg><span>Ein Einsatz auf Ihrer Fläche, mit gemeinsam festgelegtem Ziel</span></li>
+        <li><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg><span>Ergebnisse in Ihren Formaten, mit Genauigkeitsnachweis</span></li>
+        <li><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg><span>Offenes Gespräch darüber, was nützt und was nicht</span></li>
+        <li><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg><span>Konditionen: [PILOTKONDITIONEN]</span></li>
+      </ul>
+    </div>
+    <form id="pform" action="https://formspree.io/f/[FORMSPREE-ID]" method="POST" novalidate>
+      <div class="two">
+        <label for="f-name">Name<input id="f-name" name="name" autocomplete="name" required></label>
+        <label for="f-org">Betrieb oder Organisation<input id="f-org" name="org" autocomplete="organization"></label>
+      </div>
+      <div class="two">
+        <label for="f-kind">Anliegen
+          <select id="f-kind" name="kind">
+            <option>Vermessung &amp; Geländemodell</option>
+            <option>Deformationsmonitoring</option>
+            <option>Bewuchskontrolle</option>
+            <option>Thermische Inspektion</option>
+            <option>Pflanzengesundheit</option>
+            <option>Kitzrettung</option>
+            <option>Etwas anderes</option>
+          </select>
+        </label>
+        <label for="f-area">Fläche (ca.)<input id="f-area" name="area" inputmode="decimal" placeholder="z. B. 12 ha"></label>
+      </div>
+      <label for="f-mail">E-Mail oder Telefon<input id="f-mail" name="contact" autocomplete="email" required></label>
+      <label for="f-msg">Worum geht es?<textarea id="f-msg" name="msg" placeholder="Was möchten Sie über Ihre Fläche wissen?"></textarea></label>
+      <label class="hp" for="f-gotcha" aria-hidden="true">Nicht ausfüllen<input id="f-gotcha" name="_gotcha" tabindex="-1" autocomplete="off"></label>
+      <button class="btn" type="submit" style="justify-self:start">Anfrage senden</button>
+      <p class="status" id="fstatus" role="status" hidden></p>
+      <p class="note">Ihre Angaben nutzen wir nur, um Ihre Anfrage zu beantworten. Details in der <a href="datenschutz.html">Datenschutzerklärung</a>. Lieber direkt: <span id="mailaddr">[E-MAIL]</span></p>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<footer class="wrap">
+  <span class="foot-brand">
+    <svg class="mark" width="48" height="32" viewBox="0 0 72 48" aria-hidden="true">
+      <g transform="translate(2 5)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 10 L13 38 L22 14 L31 38 L40 10 H46 C54 10 54 25 46 25 H35.5" stroke="currentColor" stroke-width="4.8"/>
+        <path d="M44 25 L54.5 38.5" stroke="currentColor" stroke-width="4.8"/>
+        <path d="M46.2 10 L48.4 3.2" stroke="currentColor" stroke-width="3.2"/>
+        <circle cx="49.1" cy="0.3" r="3.1" fill="var(--accent)" stroke="none"/>
+      </g>
+    </svg>
+    <span style="color:var(--muted)">© 2026 Wallering Robotics · Landkreis Mühldorf a. Inn</span>
+  </span>
+  <nav aria-label="Rechtliches"><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></nav>
+</footer>
+
+<script>
+(function(){
+  const NS='http://www.w3.org/2000/svg';
+  // crop rows
+  const rows=document.getElementById('rows');
+  const add=(x1,y1,x2,y2)=>{const l=document.createElementNS(NS,'line');l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);rows.appendChild(l)};
+  for(let x=706;x<=940;x+=18) add(x,-80,x,140);
+  for(let y=668;y<=870;y+=18) add(170,y,500,y);
+  for(let y=-62;y<=130;y+=18) add(150,y,450,y);
+  // rotors with spinning blades
+  const rot=document.getElementById('rotors');
+  [[34,0],[17,29.4],[-17,29.4],[-34,0],[-17,-29.4],[17,-29.4]].forEach(([x,y],i)=>{
+    const g=document.createElementNS(NS,'g');
+    g.innerHTML='<circle cx="'+x+'" cy="'+y+'" r="12" fill="#FBF8F1" fill-opacity=".85" stroke="#1E2A22" stroke-width="2"/>'+
+      '<line class="blade" x1="'+(x-10)+'" y1="'+y+'" x2="'+(x+10)+'" y2="'+y+'" stroke="#1E2A22" stroke-width="2" stroke-linecap="round" style="animation-delay:-'+(i*0.06)+'s"/>';
+    rot.appendChild(g);
+  });
+
+  // scroll-linked flight
+  const plan=document.getElementById('plan'), done=document.getElementById('done'), sm=document.getElementById('swathM'), drone=document.getElementById('drone');
+  const d=plan.getAttribute('d'); done.setAttribute('d',d); sm.setAttribute('d',d);
+  const L=plan.getTotalLength();
+  [done,sm].forEach(p=>{p.style.strokeDasharray=L+' '+L});
+  const hero=document.querySelector('.hero'), prog=document.getElementById('prog');
+  const START=0.36;
+  function frame(){
+    const y=window.scrollY||0;
+    const hh=hero.offsetHeight||800;
+    const t=Math.min(1,Math.max(0,y/(hh*1.1)));
+    const p=START+(1-START)*t;
+    const len=L*p;
+    done.style.strokeDashoffset=L-len; sm.style.strokeDashoffset=L-len;
+    const pt=plan.getPointAtLength(len);
+    drone.setAttribute('transform','translate('+pt.x.toFixed(1)+' '+pt.y.toFixed(1)+')');
+    const doc=document.documentElement; const max=(doc.scrollHeight-window.innerHeight)||1;
+    prog.style.width=(Math.min(1,y/max)*100).toFixed(2)+'%';
+    ticking=false;
+  }
+  let ticking=false;
+  window.addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(frame)}},{passive:true});
+  window.addEventListener('resize',frame);
+  frame();
+
+  // process console
+  const S=[
+    {s:'Planung',rows:[['Fläche','50 ha, Grenzen aus Flurkarte'],['Flughöhe','100 m über Grund'],['Bodenauflösung','1,1 cm pro Pixel'],['Überlappung','80 % in Flugrichtung'],['Genehmigung','Offene Kategorie, Anlieger informiert']],ok:'› Flugplan freigegeben'},
+    {s:'Flug',rows:[['Dauer','ca. 25 min'],['Geschwindigkeit','10 m/s'],['Aufnahmen','2 250 Bilder, Rohformat'],['Datenrate','36 MB/s auf Bordspeicher'],['Vorschau','Live-Mosaik am Boden, 0,5 m/px']],ok:'› Abdeckung vollständig, keine Lücken'},
+    {s:'Auswertung',rows:[['Referenz','Eigene Basisstation, PPK'],['Zeitabgleich','GNSS-Zeitmarke je Auslösung'],['Prüfung','3 Zähler, 2 250 / 2 250 / 2 250'],['Kontrolle','Passpunkte im Gelände'],['Produkte','Orthofoto, DOM, DGM']],ok:'› Datensatz freigegeben'},
+    {s:'Übergabe',rows:[['Raster','GeoTIFF, Cloud-Optimized'],['Punktwolke','LAS / LAZ'],['Bezug','ETRS89 / UTM 32N, DHHN2016'],['Bericht','PDF mit Genauigkeitsnachweis'],['Rohdaten','Auf Wunsch vollständig']],ok:'› Übergeben'}
+  ];
+  const stage=document.getElementById('cStage'), list=document.getElementById('cList'), ok=document.getElementById('cOk'), step=document.getElementById('cStep');
+  const items=[...document.querySelectorAll('#steps li')];
+  function show(i){
+    items.forEach((li,k)=>li.classList.toggle('on',k===i));
+    const c=S[i]; stage.textContent=c.s; ok.textContent=c.ok; step.textContent='SCHRITT '+(i+1)+' / 4';
+    list.innerHTML=''; c.rows.forEach(([a,b])=>{const dt=document.createElement('dt');dt.textContent=a;const dd=document.createElement('dd');dd.textContent=b;list.append(dt,dd)});
+  }
+  if('IntersectionObserver' in window){
+    const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting) show(+e.target.dataset.i)})},{rootMargin:'-45% 0px -45% 0px'});
+    items.forEach(li=>io.observe(li));
+  }
+
+  // nav highlight
+  const links=[...document.querySelectorAll('.nav a')];
+  if('IntersectionObserver' in window){
+    const so=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}})},{rootMargin:'-40% 0px -55% 0px'});
+    ['leistungen','ablauf','genauigkeit','region'].forEach(id=>so.observe(document.getElementById(id)));
+  }
+
+  // form (Formspree; funktioniert auf jedem Hosting)
+  const f=document.getElementById('pform'), st=document.getElementById('fstatus'), btn=f.querySelector('button[type=submit]');
+  const mail=document.getElementById('mailaddr').textContent.trim();
+  f.addEventListener('submit',async e=>{
+    e.preventDefault();
+    const n=f.querySelector('#f-name'), c=f.querySelector('#f-mail');
+    st.hidden=false;
+    if(!n.value.trim()||!c.value.trim()){st.textContent='Bitte Name und E-Mail oder Telefon angeben, damit wir antworten können.';(n.value.trim()?c:n).focus();return}
+    if(f.action.indexOf('[')!==-1){st.textContent='Das Formular ist noch nicht angeschlossen. Bitte schreiben Sie uns direkt an '+mail+'.';return}
+    btn.disabled=true; st.textContent='Wird gesendet …';
+    try{
+      const r=await fetch(f.action,{method:'POST',body:new FormData(f),headers:{Accept:'application/json'}});
+      if(!r.ok) throw new Error(r.status);
+      f.reset(); st.textContent='Danke, '+n.value.trim().split(' ')[0]+'. Ihre Anfrage ist angekommen, wir melden uns bei Ihnen.';
+    }catch(err){
+      st.textContent='Senden hat nicht geklappt. Bitte versuchen Sie es erneut oder schreiben Sie direkt an '+mail+'.';
+    }finally{btn.disabled=false}
+  });
+})();
+</script>
+</body>
+</html>
