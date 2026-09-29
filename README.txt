@@ -2,7 +2,9 @@ WALLERING ROBOTICS — WEBSITE PACKAGE
 =====================================
 
 Contents
-  index.html        the website
+  index.html        the website (German, main version)
+  en/index.html     English version, generated from the German page
+  sitemap.xml, robots.txt  help search engines find both languages
   impressum.html    legal notice (template)
   datenschutz.html  privacy policy (template)
   legal.css         styles for the two legal pages
@@ -49,3 +51,12 @@ CONTACT FORM (Formspree — works on any host, incl. GoDaddy)
 2. Copy the form ID (the part after /f/ in the endpoint URL).
 3. In index.html replace [FORMSPREE-ID] with it.
 Until you do, the form tells visitors to write to [E-MAIL] instead.
+
+
+LANGUAGES
+---------
+The German page (index.html) is the source. The English page (en/index.html)
+was generated from it with a translation list, so layout and code are
+identical. When you change text on one page, change the other one too.
+Impressum and Datenschutz exist in German only; the English page links to
+them marked "(German)", which is sufficient for a German business.
