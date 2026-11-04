@@ -22,18 +22,17 @@ index.html
   [PILOTKONDITIONEN]  pilot terms, or delete that bullet
 
 impressum.html
-  [VORNAME NACHNAME], [STRASSE HAUSNUMMER], [PLZ] [ORT]
-  [TELEFONNUMMER]; email is configured as ryan@walleringrobotics.de
-  Umsatzsteuer: keep EITHER the USt-IdNr line OR the Kleinunternehmer line
-  [DEU-RP-…]  LBA operator registration number (drone section is optional;
-              delete it if you don't want it shown)
-  [VERSICHERER]
+  Owner: Ryan Matthews, Wallering 29, 84577 Tüßling, Deutschland
+  Phone: +49 176 34599887; email: ryan@walleringrobotics.de
+  VAT and drone registration/insurance sections removed at the owner's request.
+  No Kleinunternehmer status is asserted.
 
 datenschutz.html
-  Same name/address as above; email is configured as ryan@walleringrobotics.de
+  Owner, address and email are configured as above.
   [PRÜFEN: …] (3x)  confirm GitHub's and Formspree's legal basis for US
                     transfers and Google Workspace's contracting entity,
                     then write the confirmed text in
+  Confirm the stated Google data-processing agreement is in place.
 
 GitHub Pages
   CNAME       tells GitHub Pages the custom domain (walleringrobotics.de)
