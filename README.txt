@@ -23,14 +23,14 @@ index.html
 
 impressum.html
   [VORNAME NACHNAME], [STRASSE HAUSNUMMER], [PLZ] [ORT]
-  [TELEFONNUMMER], [E-MAIL]
+  [TELEFONNUMMER]; email is configured as ryan@walleringrobotics.de
   Umsatzsteuer: keep EITHER the USt-IdNr line OR the Kleinunternehmer line
   [DEU-RP-…]  LBA operator registration number (drone section is optional;
               delete it if you don't want it shown)
   [VERSICHERER]
 
 datenschutz.html
-  Same name/address/e-mail as above
+  Same name/address as above; email is configured as ryan@walleringrobotics.de
   [PRÜFEN: …] (3x)  confirm GitHub's and Formspree's legal basis for US
                     transfers and Google Workspace's contracting entity,
                     then write the confirmed text in
