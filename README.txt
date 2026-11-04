@@ -18,8 +18,7 @@ of your host, so that index.html sits at the top level.
 BEFORE GOING LIVE — replace every [PLACEHOLDER]
 -----------------------------------------------
 index.html
-  [E-MAIL]            contact address shown under the form
-  [FORMSPREE-ID]      form endpoint ID from formspree.io (see below)
+  Contact email and Formspree endpoint are configured in both language pages.
   [PILOTKONDITIONEN]  pilot terms, or delete that bullet
 
 impressum.html
@@ -46,11 +45,12 @@ The legal pages are templates, not legal advice. Have them checked
 
 CONTACT FORM (Formspree — works on any host, incl. GoDaddy)
 -----------------------------------------------------------
-1. Create a free account at formspree.io, add a new form, and set the
-   notification e-mail to your inbox.
-2. Copy the form ID (the part after /f/ in the endpoint URL).
-3. In index.html replace [FORMSPREE-ID] with it.
-Until you do, the form tells visitors to write to [E-MAIL] instead.
+Both language pages submit to https://formspree.io/f/mbggqaev.
+In the Formspree dashboard, verify ryan@walleringrobotics.de as the
+notification recipient. After deployment, test both language forms and
+confirm that submissions appear in Formspree and arrive in the inbox.
+If replacing the endpoint later, update index.html and en/index.html.
+Direct email links remain available as an alternative.
 
 
 LANGUAGES
