@@ -15,11 +15,11 @@ Upload the CONTENTS of this folder (not the folder itself) to the web root
 of your host, so that index.html sits at the top level.
 
 
-BEFORE GOING LIVE — replace every [PLACEHOLDER]
+WEBSITE CONFIGURATION
 -----------------------------------------------
 index.html
   Contact email and Formspree endpoint are configured in both language pages.
-  [PILOTKONDITIONEN]  pilot terms, or delete that bullet
+  Pilot terms are negotiated individually and are not listed on the site.
 
 impressum.html
   Owner: Ryan Matthews, Wallering 29, 84577 Tüßling, Deutschland
@@ -29,10 +29,9 @@ impressum.html
 
 datenschutz.html
   Owner, address and email are configured as above.
-  [PRÜFEN: …] (3x)  confirm GitHub's and Formspree's legal basis for US
-                    transfers and Google Workspace's contracting entity,
-                    then write the confirmed text in
-  Confirm the stated Google data-processing agreement is in place.
+  The policy describes GitHub Pages hosting, Formspree submissions and
+  Google Workspace email. Unverified certification and contract claims
+  have been removed; this does not establish legal completeness.
 
 GitHub Pages
   CNAME       tells GitHub Pages the custom domain (walleringrobotics.de)
