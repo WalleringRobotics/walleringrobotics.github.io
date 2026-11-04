@@ -1,0 +1,33 @@
+name: Deployment smoke test
+on:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      send_test_enquiries:
+        description: 'Send six real Formspree enquiries (uses monthly quota)'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: deployment-smoke
+  cancel-in-progress: false
+jobs:
+  check:
+    if: github.event_name == 'workflow_dispatch' || (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'github-pages')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check public variants
+        env:
+          SEND_TEST_ENQUIRIES: ${{ inputs.send_test_enquiries }}
+        run: |
+          if [ "$SEND_TEST_ENQUIRIES" = "true" ]; then
+            python scripts/check_deployment.py --submit
+          else
+            python scripts/check_deployment.py
+          fi
